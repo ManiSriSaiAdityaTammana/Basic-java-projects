@@ -1,146 +1,68 @@
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Main {
 
-    static ArrayList<String> names = new ArrayList<>();
-    static ArrayList<String> phones = new ArrayList<>();
-    static Scanner scanner = new Scanner(System.in);
-
-    public static void handleChoice(String choice) {
-        if (choice.equals("1")) {
-            addContact();
-        } else if (choice.equals("2")) {
-            viewContacts();
-        } else if (choice.equals("3")) {
-            searchContact();
-        } else if (choice.equals("4")) {
-            updateContact();
-        } else if (choice.equals("5")) {
-            deleteContact();
-        } else if (choice.equals("6")) {
-            System.out.println("Goodbye!");
-        } else {
-            System.out.println("Invalid choice!");
+    public static String readFile(String filepath) {
+        try {
+            String content = Files.readString(Paths.get(filepath));
+            return content;
+        } catch (IOException e) {
+            return "Error reading file: " + e.getMessage();
         }
     }
 
-    public static void addContact() {
-        System.out.print("Enter contact name: ");
-        String name = scanner.nextLine().trim();
-
-        System.out.print("Enter phone number (10 digits): ");
-        String phone = scanner.nextLine().trim();
-
-        if (name.isEmpty() || !phone.matches("\\d{10}")) {
-            System.out.println("Invalid input!");
-            return;
+    public static ArrayList<String> countWordsRegex(String text) {
+        ArrayList<String> words = new ArrayList<>();
+        Matcher matcher = Pattern.compile("\\b\\w+\\b").matcher(text);
+        while (matcher.find()) {
+            words.add(matcher.group());
         }
-
-        if (names.contains(name)) {
-            System.out.println("Contact already exists!");
-        } else {
-            names.add(name);
-            phones.add(phone);
-            System.out.println("Contact added successfully!");
-        }
+        return words;
     }
 
-
-    public static void viewContacts() {
-        if (names.isEmpty()) {
-            System.out.println("No contacts available.");
-            return;
-        }
-
-        System.out.println("\nContact List:");
-        for (int i = 0; i < names.size(); i++) {
-            System.out.println(names.get(i) + ": " + phones.get(i));
-        }
-    }
-
-    public static void searchContact() {
-        System.out.print("Enter name to search: ");
-        String name = scanner.nextLine().trim();
-
-        int index = names.indexOf(name);
-        if (index >= 0) {
-            System.out.println(name + ": " + phones.get(index));
-        } else {
-            System.out.println("Contact not found!");
-        }
-    }
-
-    public static void updateContact() {
-        System.out.print("Enter the contact name to update: ");
-        String oldName = scanner.nextLine().trim();
-        int index = names.indexOf(oldName);
-
-        if (index == -1) {
-            System.out.println("Contact not found!");
-            return;
-        }
-
-        System.out.print("Enter new name (press Enter to keep same): ");
-        String newName = scanner.nextLine().trim();
-        System.out.print("Enter new phone number (press Enter to keep same): ");
-        String newPhone = scanner.nextLine().trim();
-
-        if (!newName.isEmpty()) {
-            names.set(index, newName);
-        }
-
-        if (!newPhone.isEmpty()) {
-            if (!newPhone.matches("\\d{10}")) {
-                System.out.println("Invalid phone number!");
-                return;
-            }
-            phones.set(index, newPhone);
-        }
-
-        System.out.println("Contact updated successfully!");
-    }
-
-
-    public static void deleteContact() {
-        System.out.print("Enter name to delete: ");
-        String name = scanner.nextLine().trim();
-        int index = -1;
-
-        for (int i = 0; i < names.size(); i++) {
-            if (names.get(i).equalsIgnoreCase(name)) {
-                index = i;
-                break;
+    public static int wordFrequency(ArrayList<String> words, String searchWord) {
+        int count = 0;
+        for (int i=0;i<words.size();i++) {
+            if (words.get(i).equals(searchWord)) {
+                count++;
             }
         }
-
-        if (index == -1) {
-            System.out.println("Contact not found!");
-        } else {
-            names.remove(index);
-            phones.remove(index);
-            System.out.println("Contact deleted successfully!");
-        }
+        return count;
     }
+
+    //------------------------------------------------------------------
+    public static void displayResults(int totalWords, String searchWord, int wordFreq) {
+        System.out.println("Total Words: " + totalWords);
+        System.out.println("Frequency of '" + searchWord + "': " + wordFreq);
+    }
+    //------------------------------------------------------------------
 
     public static void main(String[] args) {
-        while (true) {
-            System.out.println("\nContact Manager Menu:");
-            System.out.println("1. Add a Contact");
-            System.out.println("2. View Contacts");
-            System.out.println("3. Search for a Contact");
-            System.out.println("4. Update a Contact");
-            System.out.println("5. Delete a Contact");
-            System.out.println("6. Exit");
-            System.out.print("Choose an option (1-6): ");
-            String choice = scanner.nextLine().trim();
+        System.out.println("Welcome to the Word Counter!\n");
 
-            if (choice.equals("6")) {
-                System.out.println("Goodbye!");
-                break;
-            }
+        String filepath = "C:\\Users\\DELL\\IdeaProjects\\wordcounter\\input.txt";
+        String text = readFile(filepath);
 
-            handleChoice(choice);
+        if (text.equals("")) {
+            return;
         }
+        Scanner scanner = new Scanner(System.in);
+
+        ArrayList<String> words =  countWordsRegex(text);
+        int totalWords = words.size();
+
+        System.out.print("Enter the word to search: ");
+        String searchWord = scanner.nextLine();
+
+        int wordFreq = wordFrequency(words, searchWord);
+        displayResults(totalWords, searchWord, wordFreq);
+        scanner.close();
     }
 }
